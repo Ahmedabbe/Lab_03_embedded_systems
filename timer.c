@@ -2,23 +2,38 @@
 
 #include "timer.h"
 
-void Timer0_Init() {
-	//Enable CTC timer0
-	TCCR0A &= ~(1 << WGM00);
-	TCCR0A |= (1 << WGM01);
-	TCCR0A &= ~(1 << WGM02);
+void Timer_Init()
+{
+	/*    TIMER 0    */
 
-	//Set prescaler to Clk/1024
-	TCCR0B |= (1 << CS00) | (1 << CS02);
-	TCCR0A &= ~(1 << CS01);
+	// PWM fast mode
+	TCCR0A |= (1 << WGM01) | (1 << WGM00);
+	TCCR0B &= ~(1 << WGM02);
+
+	//Clear OC0A on match
+	TCCR0A |= (1 << COM0A1);
+	TCCR2A &= ~(1 << COM0A0);
+
+	//Set prescaler Clk/64
+	TCCR0B |= (1 << CS01) | (1 << CS00);
+	TCCR0A &= ~(1 << CS02);
+
+	/*    TIMER 2    */
+
+	//Enable CTC timer0
+	TCCR2A &= ~(1 << WGM22);
+	TCCR2A |= (1 << WGM21);
+	TCCR2A &= ~(1 << WGM20);
+
+	//Set prescaler Clk/1024
+	TCCR2B |= (1 << CS22) | (1 << CS21) | (1 << CS20);
+
+	//Enable timer2 compare match interrupts 
+	TIMSK2 |= (1 << OCIE2A);
 
 	//Output compare value calculated based on prescaler and period of 10ms
-	OCR0A = 155;
+	OCR2A = 155;
 
 	//Counter init 0
-	TCNT0 = 0;
-
-	//Interrupt enable
-	TIMSK0 |= (1<<OCIE0A);
+	TCNT2 = 0;
 }
-
