@@ -1,7 +1,3 @@
-#include <avr/io.h>
-
-#include <stdio.h>
-
 #include "serial.h"
 
 static FILE uart_stdout = FDEV_SETUP_STREAM(Uart_Putchar, NULL, _FDEV_SETUP_WRITE);

@@ -1,37 +1,21 @@
-#include <avr/io.h>
-#include <avr/pgmspace.h>
-#include <stdio.h>
-
 #include "led.h"
 #include "serial.h"
 #include "timer.h"
 #include "button.h"
 #include "adc.h"
-
-ISR(ADC_vect)
-{
-	/*
-		Triggers interrupt on finishing an ADC conversion.
-		Stores converted value in variable.
-	*/
-	adcValue = ADCH;
-}
-
-ISR(TIMER2_COMPA_vect)
-{
-	/*
-		Triggers interrupt on timer2 output compare match.
-		Setting ADSC bit in ADCSRA reg triggers a single ADC conversion.
-		Converted ADC value is set to OCR0A (pin 6) to change the brightness (duty cycle) of led
-	*/
-	ADCSRA |= (1 << ADSC);
-	OCR0A = adcValue;
-}
+#include "state.h"
 
 void main(void)
 {
-	LED_Init();
+	uint8_t direction = -1;
+	uint8_t pwmValue = 0;
+	uint8_t state = 0;
+	uint8_t counter = 0;
+
 	Timer_Init();
+	Uart_Init();
+	LED_Init();
+	Button_Init();
 	ADC_Init();
 
 	//Enable global interrupts
@@ -39,6 +23,14 @@ void main(void)
 
 	while (1)
 	{
-		printf_P(PSTR("%d\n"), adcValue);
+		/*
+			Order of operations:
+			- Wait for button interrupt trigger and check if button is released before debouncing
+			- After 10ms debounce is complete and new state is set in method "State_change"
+			- "State_handler" switches to next function in the list and it runs every timer interrupt (about 10ms)
+		*/
+		Button_read_released();
+		State_change(&state);
+		State_handler(&state, &direction, &pwmValue, &counter);
 	}
 }

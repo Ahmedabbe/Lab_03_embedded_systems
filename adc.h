@@ -1,12 +1,12 @@
 #ifndef ADC_H
 #define ADC_H
 
-#include <avr/io.h>
 #include <avr/pgmspace.h>
-#include <stdio.h>
+#include <avr/interrupt.h>
 
-volatile uint8_t adcValue = 0;
+volatile uint8_t adcValue;
 
 void ADC_Init(void);
+void Potentiometer(void);
 
 #endif //ADC_H
